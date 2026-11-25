@@ -37,19 +37,20 @@ input[type=text]{width:100%;background:var(--card);border:1px solid var(--line);
 .steps .on{background:var(--acc);color:var(--on);border-color:var(--acc)}
 .msg{padding:8px 12px;border-left:4px solid var(--hl);margin:10px 0}
 .pend{border:2px dashed var(--line);border-radius:10px;padding:18px;text-align:center}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;background:var(--card)}
+details summary{cursor:pointer;font:600 1.05rem "Bricolage Grotesque",sans-serif}
 </style>
 </head>
 <body>
 <main id="app"></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+
+<!-- ====== SESIÓN 1 (contenido + simulador) ====== -->
 <script>
-/* Clase 1 · Estadística descriptiva. Archivo compartido: lo cargan la página de música y la de control. */
 (function(){
 const esc=t=>String(t??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 const fmt=(v,d=3)=>v.toFixed(d).replace(".",",");
 const fp=p=>p<0.001?"< ,001":fmt(p,3);
-
-// ===== Preguntas (opciones fijas; clave: b d a b c b d a b c) =====
 const PREG=[
 {q:"Un cuestionario mide la satisfacción con las categorías «muy baja, baja, media, alta, muy alta». ¿Qué nivel de medida tiene esta variable?",o:["Nominal","Ordinal","Intervalo","Razón"]},
 {q:"La temperatura en grados Celsius es una variable de:",o:["Razón, porque el cero indica ausencia de temperatura","Nivel ordinal, porque se puede ordenar","Nivel nominal, porque son categorías","Intervalo, porque el cero es arbitrario"]},
@@ -62,8 +63,6 @@ const PREG=[
 {q:"El valor p (Sig.) es:",o:["La probabilidad de que H₀ sea verdadera","La probabilidad de obtener un resultado igual o más extremo que el observado si H₀ fuera cierta","La probabilidad de cometer un error tipo I","La probabilidad de que H₁ sea verdadera"]},
 {q:"La potencia de una prueba estadística es:",o:["La probabilidad de cometer un error tipo II","El valor 1 − α","La probabilidad de rechazar H₀ cuando H₀ es falsa (1 − β)","La probabilidad de rechazar H₀ cuando H₀ es verdadera"]}
 ];
-
-// ===== Estadística =====
 const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
 const sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,v)=>s+(v-m)**2,0)/(a.length-1))};
 const med=a=>{const s=[...a].sort((x,y)=>x-y),h=s.length>>1;return s.length%2?s[h]:(s[h-1]+s[h])/2};
@@ -74,7 +73,6 @@ function qn(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,
  if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
  if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
  q=p-.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
-// Shapiro-Wilk (Royston, 1995; válido para 3 ≤ n ≤ 5000)
 function sw(x){x=[...x].sort((p,q)=>p-q);const n=x.length;if(n<3||n>5000)return null;const mu=mean(x),ss=x.reduce((s,v)=>s+(v-mu)**2,0);if(ss===0)return null;
  const h=n>>1,a=new Array(h+1).fill(0);
  if(n===3)a[1]=Math.SQRT1_2;else{const m=[0];for(let i=1;i<=h;i++)m[i]=qn((i-.375)/(n+.25));
@@ -89,8 +87,6 @@ function sw(x){x=[...x].sort((p,q)=>p-q);const n=x.length;if(n<3||n>5000)return 
   if(n<=11){const g=-2.273+.459*n;if(y>=g)p=1e-99;else p=pup((-Math.log(g-y)-poly([.544,-.39978,.025054,-6.714e-4],n))/Math.exp(poly([1.3822,-.77857,.062767,-.0020322],n)))}
   else{const xx=Math.log(n);p=pup((y-poly([-1.5861,-.31082,-.083751,.0038915],xx))/Math.exp(poly([-.4803,-.082676,.0030302],xx)))}}
  return{W,p,n}}
-
-// ===== Datos =====
 const V=(name,tipo,medida)=>({name,tipo,medida});
 function ejemplo(){let s=7;const r=()=>(s=s*16807%2147483647)/2147483647,z=()=>Math.sqrt(-2*Math.log(r()))*Math.cos(2*Math.PI*r());
  const rows=[];for(let i=1;i<=40;i++){const it=[0,0,0].map(()=>Math.min(5,Math.max(1,Math.round(3.4+.9*z()))));rows.push([i,Math.round(30+6*z()),r()<.5?"H":"M",Math.round(700*Math.exp(.55*z())),...it,it[0]+it[1]+it[2]])}
@@ -100,8 +96,6 @@ function parse(t){const L=t.trim().split(/\r?\n/).filter(l=>l.trim());if(L.lengt
  const cols=g[0].map((h,j)=>{const c=g.slice(1).map(r=>r[j]);const num=c.every(v=>v===""||!isNaN(+v.replace(",",".")));return{h:h||"var"+(j+1),c,num}});
  const vars=cols.map(o=>{if(!o.num)return V(o.h,"Cadena","nominal");const u=new Set(o.c.filter(v=>v!=="")),ent=[...u].every(v=>Number.isInteger(+v.replace(",",".")));return V(o.h,"Numérico",ent&&u.size<=7?"ordinal":"escala")});
  const rows=g.slice(1).map(r=>r.map((v,j)=>cols[j].num?(v===""?null:+v.replace(",",".")):v));return{vars,rows}}
-
-// ===== Contenido =====
 const CSS=`.s1 details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}.s1 summary{cursor:pointer;font:600 1.05rem "Bricolage Grotesque",sans-serif}.s1 table{width:100%;border-collapse:collapse;font-size:.92rem;margin:8px 0}.s1 th,.s1 td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}.s1 .tb{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.s1 .tb button.on{outline:3px solid var(--hl)}.s1 .sc{overflow-x:auto;max-height:340px}.s1 select,.s1 textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px;color:inherit;font:inherit}.s1 textarea{width:100%}.s1 .w{border-left:4px solid #e0a800;padding:6px 12px;margin:8px 0;background:var(--acc2)}.s1 .res{background:var(--acc2);border-radius:8px;padding:10px 14px;margin:8px 0}.s1 svg{max-width:100%;height:auto}.s1 .gr{display:flex;gap:14px;flex-wrap:wrap}`;
 const CON=`
 <details open><summary>1. Tipos de variables y niveles de medida</summary>
@@ -123,7 +117,6 @@ const CON=`
 <details><summary>5. Contraste de hipótesis</summary>
 <p>Se plantean H₀ (hipótesis nula) y H₁ (alternativa) y se fija el nivel de significación <b>α</b>, la probabilidad máxima aceptada de <b>error tipo I</b> (rechazar una H₀ verdadera). El <b>error tipo II (β)</b> es no rechazar una H₀ falsa, y la <b>potencia (1 − β)</b> es la probabilidad de rechazar H₀ cuando es falsa.</p>
 <p>El <b>valor p</b> (en SPSS, «Sig.») es la probabilidad de obtener un resultado tan extremo o más que el observado <b>si H₀ fuera cierta</b>. No es la probabilidad de que H₀ sea cierta. Si p ≤ α se rechaza H₀; si p &gt; α no se rechaza.</p></details>`;
-
 function render(el){
  el.innerHTML=`<style>${CSS}</style><div class="s1"><h2>Conceptos clave</h2>${CON}
  <h2>Simulador tipo SPSS</h2><p class="mut">Versión educativa e independiente de SPSS. Carga datos, define su medida y contrasta la normalidad.</p>
@@ -145,8 +138,7 @@ function render(el){
   if(v.tipo==="Numérico"&&v.medida==="escala"&&new Set(c).size<=7&&c.every(Number.isInteger))return"Pocos valores enteros: ¿es realmente una variable de escala o un ítem ordinal?";
   if(v.tipo==="Numérico"&&v.medida==="nominal"&&new Set(c).size>10)return"Muchos valores distintos para una variable nominal.";return""}
  const col=i=>D.rows.map(r=>r[i]);
- function va(){const nums=D.vars.map((v,i)=>i).filter(i=>D.vars[i].tipo==="Numérico");
-  q("#vw").innerHTML=`<div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label>Variable <select id="sv">${D.vars.map((v,i)=>`<option value="${i}" ${i===sel?"selected":""}>${esc(v.name)}</option>`).join("")}</select></label><label>α <select id="sa">${[.05,.01,.1].map(a=>`<option value="${a}" ${a===al?"selected":""}>${fmt(a,2)}</option>`).join("")}</select></label></div><div id="out"></div>`;
+ function va(){q("#vw").innerHTML=`<div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label>Variable <select id="sv">${D.vars.map((v,i)=>`<option value="${i}" ${i===sel?"selected":""}>${esc(v.name)}</option>`).join("")}</select></label><label>α <select id="sa">${[.05,.01,.1].map(a=>`<option value="${a}" ${a===al?"selected":""}>${fmt(a,2)}</option>`).join("")}</select></label></div><div id="out"></div>`;
   q("#sv").onchange=e=>{sel=+e.target.value;va()};q("#sa").onchange=e=>{al=+e.target.value;va()};
   const v=D.vars[sel],o=q("#out");
   if(v.tipo!=="Numérico"){o.innerHTML=`<div class="w">«${esc(v.name)}» es una variable de texto: no admite prueba de normalidad.</div>`;return}
@@ -162,58 +154,161 @@ function render(el){
 }
 window.S1={PREG,render,sw};
 })();
-
 </script>
+
+<!-- ====== APP PRINCIPAL ====== -->
 <script>
 // ===== CONFIGURACIÓN =====
-const SU="https://deisfckikietmupypzlz.supabase.co",SK="sb_publishable__XetEygAawGocYqSj4snOw_MXvTE_ue";
-const GRUPO="musica";            // en la página del grupo de control: "control"
-const CONTACTO="[tu correo]";
-const INICIO=new Date("2026-11-24T00:00:00-05:00"); // solo para mostrar la fecha; el bloqueo real lo decide el servidor
+const SU="https://deisfckikietmupypzlz.supabase.co";
+const SK="sb_publishable__XetEygAawGocYqSj4snOw_MXvTE_ue";
+const GRUPO="musica";            // ⬅️ en la página de control: "control"
+const CONTACTO="fpsoto@utpl.edu.ec · 0991219066";
+const APERTURA_S1=new Date("2026-11-30T19:00:00-05:00"); // lunes 30 nov 2026, 19:00 Ecuador
+const POSTEST_ABIERTO=false;     // ⬅️ cambia a true el día del postest
 const sb=supabase.createClient(SU,SK);
+
+// ===== PRETEST / POSTEST: 40 preguntas y encabezados =====
+const SEMANAS40=[
+"Estadística descriptiva","Probabilidad","Estadística inferencial",
+"Test de hipótesis I","Test de hipótesis II","Análisis predictivo y factorial",
+"Aplicación a la investigación","Integración y revisión"];
+const TEST40=[
+// Semana 1
+["En una investigación sobre estrategias de enseñanza, se registra el número de horas que cada estudiante dedica al estudio por semana. ¿Qué tipo de variable es?",["Cualitativa nominal","Cuantitativa continua","Cuantitativa discreta","Cualitativa ordinal"]],
+["Un cuestionario solicita valorar el nivel de satisfacción con una escala: muy bajo, bajo, medio, alto y muy alto. ¿Qué característica tiene esta escala?",["Ordena las categorías, pero no garantiza distancias iguales entre ellas","Mide una cantidad con cero absoluto","Clasifica categorías sin orden","Registra únicamente valores numéricos continuos"]],
+["Al crear una base de datos en SPSS para una encuesta, ¿cómo conviene organizarla?",["Cada fila representa una variable y cada columna un participante","Cada fila representa un participante y cada columna una variable","Toda la información se registra en una sola celda","Cada hoja representa una respuesta individual sin identificar variables"]],
+["Una investigadora desea comprobar si las puntuaciones de una variable cuantitativa se aproximan a una distribución normal. ¿Qué procedimiento corresponde?",["Una tabla de contingencia","Una prueba de normalidad","Un análisis factorial","Una prueba de independencia entre categorías"]],
+["Un estudio plantea que el promedio de rendimiento matemático es diferente de 7 puntos. ¿Cuál es la hipótesis nula adecuada?",["La media poblacional es igual a 7","La media poblacional es mayor que 7","La media poblacional es diferente de 7","La media poblacional es menor que 7"]],
+// Semana 2
+["En un grupo de 20 estudiantes, 5 utilizan una aplicación para estudiar. Si se selecciona al azar a uno de ellos, ¿cuál es la probabilidad de que utilice la aplicación?",["0,20","0,25","0,40","0,75"]],
+["Se registra el número de respuestas correctas que obtiene un estudiante en una prueba de 10 preguntas. Esta cantidad puede tomar valores enteros de 0 a 10. ¿Qué representa?",["Una variable aleatoria discreta","Una variable aleatoria continua","Una variable cualitativa nominal","Un parámetro poblacional"]],
+["Una distribución de probabilidad describe:",["La frecuencia de cada categoría sin considerar probabilidades","Los valores posibles de una variable aleatoria y sus probabilidades","Únicamente el promedio de una muestra","La relación causal entre dos variables"]],
+["Una tabla de contingencia cruza el tipo de institución educativa (pública/privada) con la modalidad de estudio (presencial/virtual). ¿Qué permite examinar principalmente?",["La asociación entre dos variables categóricas","La diferencia entre dos medias continuas","La normalidad de una variable","La predicción de una variable cuantitativa mediante otra"]],
+["Un instrumento presenta un alfa de Cronbach de 0.88. ¿Cuál es la interpretación más adecuada?",["Los ítems muestran una consistencia interna alta","El 88 % de los participantes respondió correctamente","El instrumento tiene una validez del 88 % demostrada","La distribución de las puntuaciones es normal"]],
+// Semana 3
+["Una investigadora selecciona al azar 30 estudiantes de una población de 300, de modo que todos tengan la misma probabilidad de ser elegidos. ¿Qué tipo de muestreo utiliza?",["Muestreo por conveniencia","Muestreo aleatorio simple","Muestreo intencional","Muestreo por cuotas"]],
+["¿Cuál es el propósito principal de la inferencia estadística?",["Describir únicamente los datos observados","Utilizar información de una muestra para obtener conclusiones sobre una población","Eliminar toda incertidumbre de una investigación","Sustituir la recolección de datos"]],
+["Una muestra estima que la media de horas de estudio es 8, con un intervalo de confianza del 95 % entre 7 y 9 horas. ¿Qué interpretación es la más apropiada?",["El 95 % de los estudiantes estudia entre 7 y 9 horas","El procedimiento de estimación produce intervalos que, en repetidas muestras, contienen la media poblacional aproximadamente el 95 % de las veces","La media poblacional tiene necesariamente un 95 % de probabilidad de estar en ese intervalo","Todos los valores de la muestra están entre 7 y 9 horas"]],
+["Se desea comparar el rendimiento promedio de estudiantes pertenecientes a cuatro métodos de enseñanza independientes. ¿Qué técnica se contempla para comparar más de dos grupos?",["ANOVA","Correlación de Pearson","Alfa de Cronbach","Regresión lineal simple"]],
+["Un investigador analiza la relación entre horas de estudio y calificación, ambas cuantitativas, y considera apropiado un modelo de relación lineal. ¿Qué coeficiente de correlación es pertinente?",["Pearson","Kendall exclusivamente para categorías nominales","Alfa de Cronbach","KMO"]],
+// Semana 4
+["En un contraste de hipótesis, ¿qué expresa la hipótesis alternativa?",["La afirmación que representa una diferencia, efecto o relación que se busca contrastar","La afirmación que siempre se acepta","La ausencia obligatoria de datos","El nivel de significación elegido"]],
+["Un nivel de significación α = 0.05 representa:",["La probabilidad máxima fijada para cometer un error tipo I bajo la hipótesis nula","La probabilidad de que la hipótesis nula sea verdadera","La probabilidad de cometer un error tipo II exactamente","El porcentaje de datos que deben eliminarse"]],
+["Se comparan las calificaciones de dos grupos distintos de estudiantes: uno recibió una estrategia A y otro una estrategia B. Si se cumplen los supuestos paramétricos, ¿qué prueba t corresponde?",["t para muestras relacionadas","t para muestras independientes","Wilcoxon para muestras relacionadas","Kruskal-Wallis"]],
+["Se mide la ansiedad matemática de los mismos estudiantes antes y después de una intervención. ¿Qué prueba t corresponde si se cumplen sus supuestos?",["t para muestras independientes","t para muestras relacionadas","Mann-Whitney","ANOVA para grupos independientes"]],
+["Dos grupos independientes se comparan en una variable ordinal y no se cumplen los supuestos de una prueba paramétrica. ¿Qué alternativa no paramétrica se ajusta a dos grupos?",["Mann-Whitney","Wilcoxon para muestras relacionadas","Prueba t pareada","Pearson"]],
+// Semana 5
+["Una investigación busca contrastar si la proporción de estudiantes que aprueba una asignatura es diferente del 70 %. ¿Qué parámetro se contrasta?",["Una media","Una proporción","Una varianza","Un coeficiente de correlación"]],
+["¿Para qué se utiliza la prueba de Kolmogorov-Smirnov en los contenidos del módulo?",["Para evaluar el ajuste a una distribución o comparar distribuciones, según el diseño de la prueba","Para estimar el alfa de Cronbach","Para comparar exclusivamente tres medias","Para calcular el tamaño de una muestra aleatoria"]],
+["Se comparan puntuaciones ordinales de tres grupos independientes y no se cumplen los supuestos paramétricos. ¿Qué prueba es adecuada?",["Kruskal-Wallis","Wilcoxon","Mann-Whitney","t para muestras relacionadas"]],
+["Un grupo de estudiantes responde una escala antes y después de una actividad. Las diferencias se analizan con una prueba no paramétrica para datos relacionados. ¿Cuál corresponde?",["Kruskal-Wallis","Wilcoxon","Mann-Whitney","ANOVA de un factor"]],
+["Al presentar el resultado de un contraste, ¿qué información permite una interpretación estadística más completa?",["Solo indicar si el resultado fue significativo","Reportar la prueba utilizada, el estadístico, el valor p y la conclusión contextualizada","Presentar únicamente el tamaño de la muestra","Omitir la hipótesis evaluada y describir la opinión del investigador"]],
+// Semana 6
+["Se desea predecir la calificación final a partir de las horas de estudio, utilizando una sola variable predictora. ¿Qué técnica corresponde?",["Regresión lineal simple","Regresión lineal múltiple","Análisis factorial exploratorio","Tabla de contingencia"]],
+["Un modelo predice el rendimiento académico usando horas de estudio, asistencia y hábitos de lectura. ¿Qué tipo de regresión se plantea?",["Regresión lineal simple","Regresión lineal múltiple","Correlación de Kendall","Prueba de Wilcoxon"]],
+["En un análisis factorial exploratorio, el índice KMO se utiliza principalmente para valorar:",["La adecuación de los datos para realizar un análisis factorial","La diferencia entre dos medias","La normalidad de los residuos de una regresión","La proporción de estudiantes aprobados"]],
+["En el análisis factorial exploratorio, una prueba de esfericidad de Bartlett estadísticamente significativa sugiere que:",["La matriz de correlaciones no es una matriz identidad y puede existir relación suficiente entre variables para el análisis factorial","Todas las variables son independientes entre sí","La muestra tiene necesariamente distribución normal","El modelo de regresión tiene capacidad predictiva perfecta"]],
+["Una docente desea identificar dimensiones subyacentes en un conjunto de ítems sobre hábitos de estudio. ¿Qué técnica de la unidad resulta pertinente?",["Análisis factorial exploratorio","Prueba t para muestras independientes","Mann-Whitney","Tabla de frecuencias de una sola variable"]],
+// Semana 7
+["Para iniciar un trabajo académico que aplica estadística a un problema de Educación Matemática, ¿qué elemento debe delimitarse primero?",["El problema o pregunta de investigación","El color de los gráficos","El programa informático antes de definir el objetivo","La conclusión que se desea obtener"]],
+["Un estudio pretende determinar si existe relación entre el tiempo de estudio y el rendimiento en Matemática. ¿Qué decisión metodológica es coherente con ese propósito?",["Definir ambas variables y seleccionar un análisis de asociación adecuado a su escala y supuestos","Aplicar siempre una prueba t para muestras relacionadas","Usar una tabla de frecuencias sin considerar la pregunta","Elegir la técnica que produzca el valor p más pequeño"]],
+["¿Por qué es importante definir la población y la muestra en el diseño estadístico de una investigación?",["Porque permite establecer a quiénes se refiere el estudio y de dónde proceden los datos","Porque garantiza que todos los resultados sean significativos","Porque evita formular objetivos","Porque reemplaza la selección de variables"]],
+["En una investigación educativa se recopilan calificaciones y modalidad de enseñanza (presencial o virtual). ¿Qué aspecto debe considerarse antes de elegir una prueba estadística?",["La naturaleza y escala de las variables, el diseño y los supuestos","Únicamente el número de páginas del informe","La preferencia personal del investigador","El orden alfabético de los participantes"]],
+["¿Cuál es una característica de una conclusión estadística bien fundamentada en un trabajo académico?",["Responde al objetivo con base en los resultados y reconoce el alcance de los datos","Generaliza a cualquier población aunque la muestra no lo permita","Afirma causalidad cuando solo se observó correlación","Ignora los resultados que contradicen la expectativa inicial"]],
+// Semana 8
+["Un investigador resume las edades de los participantes mediante media, mediana y desviación estándar. ¿A qué enfoque corresponde principalmente?",["Estadística descriptiva","Estadística inferencial","Análisis factorial","Contraste de hipótesis"]],
+["Se selecciona una muestra de docentes para estimar el porcentaje de quienes utilizan recursos digitales en una población mayor. ¿Qué enfoque se está aplicando?",["Estadística descriptiva únicamente","Estadística inferencial","Análisis factorial exploratorio","Escala Likert"]],
+["Un estudio compara las puntuaciones de dos grupos independientes y las condiciones permiten utilizar una prueba paramétrica. ¿Cuál sería una opción pertinente?",["Prueba t para muestras independientes","Prueba t para muestras relacionadas","Wilcoxon para muestras relacionadas","Alfa de Cronbach"]],
+["En un estudio se obtiene p = 0,03 y se fijó previamente α = 0,05. ¿Cuál es la decisión estadística habitual?",["Rechazar la hipótesis nula al nivel de significación establecido","Aceptar que la hipótesis nula es verdadera","Concluir que el efecto es necesariamente grande","Afirmar que existe un 3 % de probabilidad de que la hipótesis nula sea verdadera"]],
+["Un artículo concluye que un método de enseñanza causa mejores resultados porque encontró una correlación positiva entre uso del método y calificaciones, sin un diseño que permita establecer causalidad. ¿Qué valoración es correcta?",["La conclusión excede lo que permite afirmar una correlación","La correlación demuestra causalidad por sí sola","El resultado prueba que no existe relación","La correlación elimina la necesidad de considerar el diseño"]]
+];
 
 const SES=[
 {t:"Estadística descriptiva",d:"Tipos de variables, escala Likert, base de datos en SPSS, prueba de normalidad y contraste de hipótesis."},
 {t:"Probabilidad",d:"Probabilidad y variable aleatoria, tablas de contingencia y alfa de Cronbach."},
 {t:"Estadística inferencial",d:"Muestreo, intervalos de confianza, ANOVA y correlaciones de Pearson, Kendall y Spearman."},
 {t:"Por definir"},{t:"Por definir"},{t:"Por definir"},{t:"Por definir"},{t:"Por definir"}];
-// Preguntas de conocimiento por sesión (opciones fijas, mismo orden para todos). Reemplaza las de EJEMPLO.
 const PREG=window.S1?{1:S1.PREG}:{};
 const GENEROS=["Pop","Rock","Reggaetón","Salsa o cumbia","Baladas","Hip hop o rap","Electrónica","Clásica o instrumental","Otro"];
 const SAT=["La clase me pareció clara.","Me sentí motivado(a) a aprender.","Recomendaría este recurso a otros estudiantes.","La canción me ayudó a recordar los conceptos."];
-const CONSENT="Usted participa en una investigación para el trabajo de titulación de la Maestría en Educación, mención Enseñanza de las Matemáticas (UTPL, 2026), titulada «Desarrollo y validación de un Marco Analítico Didáctico (MAD) para la enseñanza crítica del pensamiento estadístico mediante canciones generadas con Inteligencia Artificial». Su participación consiste en estudiar el contenido de cada semana, escuchar una canción y responder un cuestionario breve. Es voluntaria y puede retirarse en cualquier momento antes de enviar sus respuestas, sin consecuencia alguna. Sus respuestas son completamente anónimas: no se registra su nombre ni ningún dato que permita identificarle, y se analizarán de forma agrupada y se usarán únicamente con fines académicos. Al marcar la casilla, declara que ha leído esta información y acepta participar.";
+const CONSENT="Usted participa en una investigación para el trabajo de titulación de la Maestría en Educación, mención Enseñanza de las Matemáticas (UTPL, 2026), titulada «Desarrollo de recursos interactivos musicales con IA para pensamiento estadístico». Su participación consiste en estudiar el contenido de cada semana, escuchar una canción y responder un cuestionario breve. Es voluntaria y puede retirarse en cualquier momento antes de enviar sus respuestas, sin consecuencia alguna. Sus respuestas son completamente anónimas: no se registra su nombre ni ningún dato que permita identificarle, y se analizarán de forma agrupada y se usarán únicamente con fines académicos. Al marcar la casilla, declara que ha leído esta información y acepta participar.";
 
-const $=s=>document.querySelector(s),app=$("#app"),L="L";
+const $=s=>document.querySelector(s),app=$("#app");
 const esc=t=>String(t??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
-let S={consent:false,done:{}};
+let S={done:{}};
 try{S=JSON.parse(localStorage.getItem("mad_m3")||"")||S}catch(e){}
 const keep=()=>{try{localStorage.setItem("mad_m3",JSON.stringify(S))}catch(e){}};
-const fecha=n=>{const d=new Date(INICIO.getTime()+(n-1)*7*864e5);return d.toLocaleDateString("es-EC",{day:"numeric",month:"long"})};
+const fecha=n=>{const d=new Date(APERTURA_S1.getTime()+(n-1)*7*864e5);return d.toLocaleDateString("es-EC",{day:"numeric",month:"long"})};
 const songUrl=n=>sb.storage.from("canciones").getPublicUrl("semana"+n+".mp3").data.publicUrl;
+const s1Abierta=()=>Date.now()>=APERTURA_S1.getTime();
 
-// ===== CONSENTIMIENTO (se pide una vez por dispositivo; no se guarda ningún dato personal) =====
-function consent(){
- app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación, mención Enseñanza de la Matemática · UTPL 2026</p>
- <h1>Consentimiento informado</h1><div class="card"><p>${esc(CONSENT)}</p><p class="mut">Contacto de la investigadora: ${esc(CONTACTO)}</p>
- <label class="opt"><input type="checkbox" id="ck"> He leído la información y acepto participar.</label>
- <div class="row" style="margin-top:12px"><button id="si">Aceptar y continuar</button><button class="ghost" id="no">No deseo participar</button></div></div>`;
- $("#no").onclick=()=>{app.innerHTML=`<h1>Gracias</h1><p>Respetamos tu decisión. No se recogerá ningún dato.</p>`};
- $("#si").onclick=()=>{if(!$("#ck").checked){alert("Marca la casilla para continuar.");return}S.consent=true;keep();home()}}
-
-// ===== SESIONES (el servidor decide cuáles están abiertas) =====
+// ===== MENÚ =====
 async function home(){
  app.innerHTML=`<p class="mut">Cargando…</p>`;
  const {data,error}=await sb.rpc("sesion_abierta");
  if(error){app.innerHTML=`<p>No se pudo consultar el calendario: ${esc(error.message)}</p><button id="rl">Reintentar</button>`;$("#rl").onclick=home;return}
  const ab=data;
- app.innerHTML=`<h1>Clases</h1><p class="mut">Cada clase se habilita en su semana y luego queda abierta.</p>
- <div class="grid">${SES.map((s,i)=>{const n=i+1,open=n<=ab&&s.d,done=S.done[n];
- return `<button class="ses" data-n="${n}" ${open&&!done?"":"disabled"}><b>Clase ${n}: ${esc(s.t)}</b>${done?`<span class="tag">Completada</span>`:open?`<span class="tag">Abierta</span>`:`<span class="mut">${n>ab?"Se abre el "+fecha(n):"Próximamente"}</span>`}</button>`}).join("")}</div>
+ const abiertas=Array(8).fill(0).map((_,i)=>i===0?(s1Abierta()?1:0):(i+1<=ab?1:0));
+ app.innerHTML=`<h1>Pensamiento estadístico</h1>
+ <p class="mut">Maestría en Educación · UTPL 2026</p>
+ <h2>Evaluación inicial y final</h2>
+ <div class="grid">
+   <button class="ses" id="pre"><b>Pretest</b><span class="tag">Disponible</span></button>
+   <button class="ses" id="post" ${POSTEST_ABIERTO?"":"disabled"}><b>Postest</b>${POSTEST_ABIERTO?`<span class="tag">Disponible</span>`:`<span class="mut">Se habilita al finalizar el módulo</span>`}</button>
+ </div>
+ <h2>Clases</h2>
+ <p class="mut">La Clase 1 se abre el lunes 30 de noviembre a las 19:00 (hora de Ecuador). Las siguientes se habilitan semana a semana.</p>
+ <div class="grid">${SES.map((s,i)=>{const n=i+1,open=abiertas[i]&&s.d,done=S.done[n];
+ return `<button class="ses" data-n="${n}" ${open&&!done?"":"disabled"}><b>Clase ${n}: ${esc(s.t)}</b>${done?`<span class="tag">Completada</span>`:open?`<span class="tag">Abierta</span>`:`<span class="mut">${n===1?"Se abre el 30 de noviembre a las 19:00":n>ab?"Se abre el "+fecha(n):"Próximamente"}</span>`}</button>`}).join("")}</div>
 `;
- document.querySelectorAll(".ses").forEach(b=>b.onclick=()=>sesion(+b.dataset.n));
+ $("#pre").onclick=()=>prueba("pretest");
+ $("#post").onclick=()=>prueba("postest");
+ document.querySelectorAll(".ses[data-n]").forEach(b=>b.onclick=()=>sesion(+b.dataset.n));
 }
 
-// ===== SESIÓN: contenido → canción → cuestionario =====
+// ===== PRETEST / POSTEST =====
+let PT=null;
+function prueba(tipo){
+ PT={tipo,t0:null,resp:new Array(40).fill(null)};
+ const titulo=tipo==="pretest"?"Pretest":"Postest";
+ app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
+ <h1>${titulo} de pensamiento estadístico</h1>
+ <div class="card"><h2 style="margin-top:0">Consentimiento informado</h2>
+ <p>${esc(CONSENT)}</p><p class="mut">Contacto de la investigadora: ${esc(CONTACTO)}</p>
+ <label class="opt"><input type="checkbox" id="ck"> He leído la información y acepto participar en el ${titulo.toLowerCase()}.</label>
+ <div class="row" style="margin-top:12px"><button id="si">Aceptar y comenzar</button><button class="ghost" id="no">No deseo participar</button></div></div>`;
+ $("#no").onclick=()=>{app.innerHTML=`<h1>Gracias</h1><p>Respetamos tu decisión. No se recogerá ningún dato.</p><button id="hm">Volver al inicio</button>`;$("#hm").onclick=home};
+ $("#si").onclick=()=>{if(!$("#ck").checked){alert("Marca la casilla para continuar.");return}PT.t0=Date.now();cuestionario40(tipo)};
+}
+function cuestionario40(tipo){
+ const titulo=tipo==="pretest"?"Pretest":"Postest";
+ app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
+ <h1>${titulo} de pensamiento estadístico</h1>
+ <div class="msg"><b>Instrucciones.</b> 40 preguntas de opción múltiple, 5 por semana. Responde de manera individual y sin consultar materiales. Marca una sola opción por pregunta. No se asigna calificación.</div>
+ <form id="fm">${SEMANAS40.map((t,w)=>{
+   const a=w*5,b=a+5;
+   return `<div class="card"><h2 style="margin-top:0">Semana ${w+1} · ${esc(t)}</h2>
+   ${TEST40.slice(a,b).map((p,kk)=>{const i=a+kk;return `<div class="q"><b>${i+1}.</b> ${esc(p[0])}${p[1].map((o,j)=>`<label class="opt"><input type="radio" name="p${i+1}" value="${"abcde"[j]}" required> ${"abcde"[j]}) ${esc(o)}</label>`).join("")}</div>`}).join("")}
+   </div>`;
+ }).join("")}
+ <button id="en">Enviar ${titulo.toLowerCase()}</button></form>`;
+ $("#fm").onsubmit=async e=>{
+   e.preventDefault();
+   const falta=[];TEST40.forEach((_,i)=>{const r=document.querySelector(`input[name=p${i+1}]:checked`);if(r)PT.resp[i]=r.value;else falta.push(i+1)});
+   if(falta.length){alert("Faltan responder: "+falta.join(", "));return}
+   const fila={tipo:PT.tipo,grupo:GRUPO,consentimiento:true,seg_total:Math.round((Date.now()-PT.t0)/1000)};
+   PT.resp.forEach((v,i)=>fila["p"+(i+1)]=v);
+   const btn=$("#en");btn.disabled=true;btn.textContent="Guardando…";
+   const {error}=await sb.from("pruebas").insert(fila);
+   if(error){btn.disabled=false;btn.textContent="Reintentar";alert("No se pudo guardar: "+error.message);return}
+   app.innerHTML=`<h1>¡Listo!</h1><p>Tu ${PT.tipo} quedó registrado. Gracias por participar.</p>
+   ${PT.tipo==="pretest"?`<p class="mut">El postest se habilitará al finalizar el módulo, en esta misma página.</p>`:""}
+   <button id="hm">Volver al inicio</button>`;
+   $("#hm").onclick=home;
+ };
+}
+
+// ===== SESIÓN =====
 let R,T;
 function pasos(a){return `<div class="steps">${["1 Contenido","2 Canción","3 Cuestionario"].map((x,i)=>`<span class="${i+1===a?"on":""}">${x}</span>`).join("")}</div>`}
 function sesion(n){R={n,c:0,q:0,tot:0,ef:0,rep:0,fin:false,last:0,p:{},sat:{},gen:null};T=Date.now();contenido()}
@@ -257,7 +352,7 @@ function cuest(){
   S.done[R.n]=1;keep();
   app.innerHTML=`<h1>¡Listo!</h1><p>Tus respuestas quedaron registradas. Gracias por participar.</p><button id="hm">Volver al inicio</button>`;$("#hm").onclick=home}}
 
-S.consent?home():consent();
+home();
 </script>
 </body>
 </html>
