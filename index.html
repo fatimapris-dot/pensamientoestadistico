@@ -91,11 +91,7 @@ const V=(name,tipo,medida)=>({name,tipo,medida});
 function ejemplo(){let s=7;const r=()=>(s=s*16807%2147483647)/2147483647,z=()=>Math.sqrt(-2*Math.log(r()))*Math.cos(2*Math.PI*r());
  const rows=[];for(let i=1;i<=40;i++){const it=[0,0,0].map(()=>Math.min(5,Math.max(1,Math.round(3.4+.9*z()))));rows.push([i,Math.round(30+6*z()),r()<.5?"H":"M",Math.round(700*Math.exp(.55*z())),...it,it[0]+it[1]+it[2]])}
  return{vars:[V("id","Numérico","nominal"),V("edad","Numérico","escala"),V("sexo","Cadena","nominal"),V("ingreso","Numérico","escala"),V("item1","Numérico","ordinal"),V("item2","Numérico","ordinal"),V("item3","Numérico","ordinal"),V("puntaje","Numérico","escala")],rows}}
-function parse(t){const L=t.trim().split(/\r?\n/).filter(l=>l.trim());if(L.length<2)return null;const d=L[0].includes("\t")?"\t":L[0].includes(";")?";":",";
- const g=L.map(l=>l.split(d).map(c=>c.trim()));const k=g[0].length;if(g.some(r=>r.length!==k))return null;
- const cols=g[0].map((h,j)=>{const c=g.slice(1).map(r=>r[j]);const num=c.every(v=>v===""||!isNaN(+v.replace(",",".")));return{h:h||"var"+(j+1),c,num}});
- const vars=cols.map(o=>{if(!o.num)return V(o.h,"Cadena","nominal");const u=new Set(o.c.filter(v=>v!=="")),ent=[...u].every(v=>Number.isInteger(+v.replace(",",".")));return V(o.h,"Numérico",ent&&u.size<=7?"ordinal":"escala")});
- const rows=g.slice(1).map(r=>r.map((v,j)=>cols[j].num?(v===""?null:+v.replace(",",".")):v));return{vars,rows}}
+function parse(t){const L=t.trim().split(/\r?\n/).filter(l=>l.trim());if(L.length<2)return null;const d=L[0].includes("\t")?"\t":L[0].includes(";")?";":",";}
 const CSS=`.s1 details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0}.s1 summary{cursor:pointer;font:600 1.05rem "Bricolage Grotesque",sans-serif}.s1 table{width:100%;border-collapse:collapse;font-size:.92rem;margin:8px 0}.s1 th,.s1 td{text-align:left;padding:6px;border-bottom:1px solid var(--line);vertical-align:top}.s1 .tb{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.s1 .tb button.on{outline:3px solid var(--hl)}.s1 .sc{overflow-x:auto;max-height:340px}.s1 select,.s1 textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px;color:inherit;font:inherit}.s1 textarea{width:100%}.s1 .w{border-left:4px solid #e0a800;padding:6px 12px;margin:8px 0;background:var(--acc2)}.s1 .res{background:var(--acc2);border-radius:8px;padding:10px 14px;margin:8px 0}.s1 svg{max-width:100%;height:auto}.s1 .gr{display:flex;gap:14px;flex-wrap:wrap}`;
 const CON=`
 <details open><summary>1. Tipos de variables y niveles de medida</summary>
@@ -163,59 +159,50 @@ const SU="https://deisfckikietmupypzlz.supabase.co";
 const SK="sb_publishable__XetEygAawGocYqSj4snOw_MXvTE_ue";
 const GRUPO="musica";            // ⬅️ en la página de control: "control"
 const CONTACTO="fpsoto@utpl.edu.ec · 0991219066";
-const APERTURA_S1=new Date("2026-11-30T19:00:00-05:00"); // lunes 30 nov 2026, 19:00 Ecuador
-const POSTEST_ABIERTO=false;     // ⬅️ cambia a true el día del postest
+const APERTURA_S1=new Date("2026-11-30T19:00:00-05:00");
+const POSTEST_ABIERTO=false;
 const sb=supabase.createClient(SU,SK);
 
-// ===== PRETEST / POSTEST: 40 preguntas y encabezados =====
 const SEMANAS40=[
 "Estadística descriptiva","Probabilidad","Estadística inferencial",
 "Test de hipótesis I","Test de hipótesis II","Análisis predictivo y factorial",
 "Aplicación a la investigación","Integración y revisión"];
 const TEST40=[
-// Semana 1
 ["En una investigación sobre estrategias de enseñanza, se registra el número de horas que cada estudiante dedica al estudio por semana. ¿Qué tipo de variable es?",["Cualitativa nominal","Cuantitativa continua","Cuantitativa discreta","Cualitativa ordinal"]],
 ["Un cuestionario solicita valorar el nivel de satisfacción con una escala: muy bajo, bajo, medio, alto y muy alto. ¿Qué característica tiene esta escala?",["Ordena las categorías, pero no garantiza distancias iguales entre ellas","Mide una cantidad con cero absoluto","Clasifica categorías sin orden","Registra únicamente valores numéricos continuos"]],
 ["Al crear una base de datos en SPSS para una encuesta, ¿cómo conviene organizarla?",["Cada fila representa una variable y cada columna un participante","Cada fila representa un participante y cada columna una variable","Toda la información se registra en una sola celda","Cada hoja representa una respuesta individual sin identificar variables"]],
 ["Una investigadora desea comprobar si las puntuaciones de una variable cuantitativa se aproximan a una distribución normal. ¿Qué procedimiento corresponde?",["Una tabla de contingencia","Una prueba de normalidad","Un análisis factorial","Una prueba de independencia entre categorías"]],
 ["Un estudio plantea que el promedio de rendimiento matemático es diferente de 7 puntos. ¿Cuál es la hipótesis nula adecuada?",["La media poblacional es igual a 7","La media poblacional es mayor que 7","La media poblacional es diferente de 7","La media poblacional es menor que 7"]],
-// Semana 2
 ["En un grupo de 20 estudiantes, 5 utilizan una aplicación para estudiar. Si se selecciona al azar a uno de ellos, ¿cuál es la probabilidad de que utilice la aplicación?",["0,20","0,25","0,40","0,75"]],
 ["Se registra el número de respuestas correctas que obtiene un estudiante en una prueba de 10 preguntas. Esta cantidad puede tomar valores enteros de 0 a 10. ¿Qué representa?",["Una variable aleatoria discreta","Una variable aleatoria continua","Una variable cualitativa nominal","Un parámetro poblacional"]],
 ["Una distribución de probabilidad describe:",["La frecuencia de cada categoría sin considerar probabilidades","Los valores posibles de una variable aleatoria y sus probabilidades","Únicamente el promedio de una muestra","La relación causal entre dos variables"]],
 ["Una tabla de contingencia cruza el tipo de institución educativa (pública/privada) con la modalidad de estudio (presencial/virtual). ¿Qué permite examinar principalmente?",["La asociación entre dos variables categóricas","La diferencia entre dos medias continuas","La normalidad de una variable","La predicción de una variable cuantitativa mediante otra"]],
 ["Un instrumento presenta un alfa de Cronbach de 0.88. ¿Cuál es la interpretación más adecuada?",["Los ítems muestran una consistencia interna alta","El 88 % de los participantes respondió correctamente","El instrumento tiene una validez del 88 % demostrada","La distribución de las puntuaciones es normal"]],
-// Semana 3
 ["Una investigadora selecciona al azar 30 estudiantes de una población de 300, de modo que todos tengan la misma probabilidad de ser elegidos. ¿Qué tipo de muestreo utiliza?",["Muestreo por conveniencia","Muestreo aleatorio simple","Muestreo intencional","Muestreo por cuotas"]],
 ["¿Cuál es el propósito principal de la inferencia estadística?",["Describir únicamente los datos observados","Utilizar información de una muestra para obtener conclusiones sobre una población","Eliminar toda incertidumbre de una investigación","Sustituir la recolección de datos"]],
 ["Una muestra estima que la media de horas de estudio es 8, con un intervalo de confianza del 95 % entre 7 y 9 horas. ¿Qué interpretación es la más apropiada?",["El 95 % de los estudiantes estudia entre 7 y 9 horas","El procedimiento de estimación produce intervalos que, en repetidas muestras, contienen la media poblacional aproximadamente el 95 % de las veces","La media poblacional tiene necesariamente un 95 % de probabilidad de estar en ese intervalo","Todos los valores de la muestra están entre 7 y 9 horas"]],
 ["Se desea comparar el rendimiento promedio de estudiantes pertenecientes a cuatro métodos de enseñanza independientes. ¿Qué técnica se contempla para comparar más de dos grupos?",["ANOVA","Correlación de Pearson","Alfa de Cronbach","Regresión lineal simple"]],
 ["Un investigador analiza la relación entre horas de estudio y calificación, ambas cuantitativas, y considera apropiado un modelo de relación lineal. ¿Qué coeficiente de correlación es pertinente?",["Pearson","Kendall exclusivamente para categorías nominales","Alfa de Cronbach","KMO"]],
-// Semana 4
 ["En un contraste de hipótesis, ¿qué expresa la hipótesis alternativa?",["La afirmación que representa una diferencia, efecto o relación que se busca contrastar","La afirmación que siempre se acepta","La ausencia obligatoria de datos","El nivel de significación elegido"]],
 ["Un nivel de significación α = 0.05 representa:",["La probabilidad máxima fijada para cometer un error tipo I bajo la hipótesis nula","La probabilidad de que la hipótesis nula sea verdadera","La probabilidad de cometer un error tipo II exactamente","El porcentaje de datos que deben eliminarse"]],
 ["Se comparan las calificaciones de dos grupos distintos de estudiantes: uno recibió una estrategia A y otro una estrategia B. Si se cumplen los supuestos paramétricos, ¿qué prueba t corresponde?",["t para muestras relacionadas","t para muestras independientes","Wilcoxon para muestras relacionadas","Kruskal-Wallis"]],
 ["Se mide la ansiedad matemática de los mismos estudiantes antes y después de una intervención. ¿Qué prueba t corresponde si se cumplen sus supuestos?",["t para muestras independientes","t para muestras relacionadas","Mann-Whitney","ANOVA para grupos independientes"]],
 ["Dos grupos independientes se comparan en una variable ordinal y no se cumplen los supuestos de una prueba paramétrica. ¿Qué alternativa no paramétrica se ajusta a dos grupos?",["Mann-Whitney","Wilcoxon para muestras relacionadas","Prueba t pareada","Pearson"]],
-// Semana 5
 ["Una investigación busca contrastar si la proporción de estudiantes que aprueba una asignatura es diferente del 70 %. ¿Qué parámetro se contrasta?",["Una media","Una proporción","Una varianza","Un coeficiente de correlación"]],
 ["¿Para qué se utiliza la prueba de Kolmogorov-Smirnov en los contenidos del módulo?",["Para evaluar el ajuste a una distribución o comparar distribuciones, según el diseño de la prueba","Para estimar el alfa de Cronbach","Para comparar exclusivamente tres medias","Para calcular el tamaño de una muestra aleatoria"]],
 ["Se comparan puntuaciones ordinales de tres grupos independientes y no se cumplen los supuestos paramétricos. ¿Qué prueba es adecuada?",["Kruskal-Wallis","Wilcoxon","Mann-Whitney","t para muestras relacionadas"]],
 ["Un grupo de estudiantes responde una escala antes y después de una actividad. Las diferencias se analizan con una prueba no paramétrica para datos relacionados. ¿Cuál corresponde?",["Kruskal-Wallis","Wilcoxon","Mann-Whitney","ANOVA de un factor"]],
 ["Al presentar el resultado de un contraste, ¿qué información permite una interpretación estadística más completa?",["Solo indicar si el resultado fue significativo","Reportar la prueba utilizada, el estadístico, el valor p y la conclusión contextualizada","Presentar únicamente el tamaño de la muestra","Omitir la hipótesis evaluada y describir la opinión del investigador"]],
-// Semana 6
 ["Se desea predecir la calificación final a partir de las horas de estudio, utilizando una sola variable predictora. ¿Qué técnica corresponde?",["Regresión lineal simple","Regresión lineal múltiple","Análisis factorial exploratorio","Tabla de contingencia"]],
 ["Un modelo predice el rendimiento académico usando horas de estudio, asistencia y hábitos de lectura. ¿Qué tipo de regresión se plantea?",["Regresión lineal simple","Regresión lineal múltiple","Correlación de Kendall","Prueba de Wilcoxon"]],
 ["En un análisis factorial exploratorio, el índice KMO se utiliza principalmente para valorar:",["La adecuación de los datos para realizar un análisis factorial","La diferencia entre dos medias","La normalidad de los residuos de una regresión","La proporción de estudiantes aprobados"]],
 ["En el análisis factorial exploratorio, una prueba de esfericidad de Bartlett estadísticamente significativa sugiere que:",["La matriz de correlaciones no es una matriz identidad y puede existir relación suficiente entre variables para el análisis factorial","Todas las variables son independientes entre sí","La muestra tiene necesariamente distribución normal","El modelo de regresión tiene capacidad predictiva perfecta"]],
 ["Una docente desea identificar dimensiones subyacentes en un conjunto de ítems sobre hábitos de estudio. ¿Qué técnica de la unidad resulta pertinente?",["Análisis factorial exploratorio","Prueba t para muestras independientes","Mann-Whitney","Tabla de frecuencias de una sola variable"]],
-// Semana 7
 ["Para iniciar un trabajo académico que aplica estadística a un problema de Educación Matemática, ¿qué elemento debe delimitarse primero?",["El problema o pregunta de investigación","El color de los gráficos","El programa informático antes de definir el objetivo","La conclusión que se desea obtener"]],
 ["Un estudio pretende determinar si existe relación entre el tiempo de estudio y el rendimiento en Matemática. ¿Qué decisión metodológica es coherente con ese propósito?",["Definir ambas variables y seleccionar un análisis de asociación adecuado a su escala y supuestos","Aplicar siempre una prueba t para muestras relacionadas","Usar una tabla de frecuencias sin considerar la pregunta","Elegir la técnica que produzca el valor p más pequeño"]],
 ["¿Por qué es importante definir la población y la muestra en el diseño estadístico de una investigación?",["Porque permite establecer a quiénes se refiere el estudio y de dónde proceden los datos","Porque garantiza que todos los resultados sean significativos","Porque evita formular objetivos","Porque reemplaza la selección de variables"]],
 ["En una investigación educativa se recopilan calificaciones y modalidad de enseñanza (presencial o virtual). ¿Qué aspecto debe considerarse antes de elegir una prueba estadística?",["La naturaleza y escala de las variables, el diseño y los supuestos","Únicamente el número de páginas del informe","La preferencia personal del investigador","El orden alfabético de los participantes"]],
 ["¿Cuál es una característica de una conclusión estadística bien fundamentada en un trabajo académico?",["Responde al objetivo con base en los resultados y reconoce el alcance de los datos","Generaliza a cualquier población aunque la muestra no lo permita","Afirma causalidad cuando solo se observó correlación","Ignora los resultados que contradicen la expectativa inicial"]],
-// Semana 8
 ["Un investigador resume las edades de los participantes mediante media, mediana y desviación estándar. ¿A qué enfoque corresponde principalmente?",["Estadística descriptiva","Estadística inferencial","Análisis factorial","Contraste de hipótesis"]],
 ["Se selecciona una muestra de docentes para estimar el porcentaje de quienes utilizan recursos digitales en una población mayor. ¿Qué enfoque se está aplicando?",["Estadística descriptiva únicamente","Estadística inferencial","Análisis factorial exploratorio","Escala Likert"]],
 ["Un estudio compara las puntuaciones de dos grupos independientes y las condiciones permiten utilizar una prueba paramétrica. ¿Cuál sería una opción pertinente?",["Prueba t para muestras independientes","Prueba t para muestras relacionadas","Wilcoxon para muestras relacionadas","Alfa de Cronbach"]],
@@ -269,21 +256,39 @@ async function home(){
 // ===== PRETEST / POSTEST =====
 let PT=null;
 function prueba(tipo){
- PT={tipo,t0:null,resp:new Array(40).fill(null)};
+ PT={tipo,t0:null,resp:new Array(40).fill(null),codigo:null};
  const titulo=tipo==="pretest"?"Pretest":"Postest";
+ // Paso 1: pedir código de participante
  app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
  <h1>${titulo} de pensamiento estadístico</h1>
- <div class="card"><h2 style="margin-top:0">Consentimiento informado</h2>
- <p>${esc(CONSENT)}</p><p class="mut">Contacto de la investigadora: ${esc(CONTACTO)}</p>
- <label class="opt"><input type="checkbox" id="ck"> He leído la información y acepto participar en el ${titulo.toLowerCase()}.</label>
- <div class="row" style="margin-top:12px"><button id="si">Aceptar y comenzar</button><button class="ghost" id="no">No deseo participar</button></div></div>`;
- $("#no").onclick=()=>{app.innerHTML=`<h1>Gracias</h1><p>Respetamos tu decisión. No se recogerá ningún dato.</p><button id="hm">Volver al inicio</button>`;$("#hm").onclick=home};
- $("#si").onclick=()=>{if(!$("#ck").checked){alert("Marca la casilla para continuar.");return}PT.t0=Date.now();cuestionario40(tipo)};
+ <div class="card"><h2 style="margin-top:0">Identificación del participante</h2>
+ <p>Escribe el código que te entregó la investigadora. Lo usarás también en el ${tipo==="pretest"?"postest":"pretest"}. <b>Es importante no cambiarlo.</b></p>
+ <input type="text" id="cg" placeholder="Ejemplo: participante1" autocomplete="off" autocapitalize="off" spellcheck="false">
+ <div class="mut" id="cgm" style="min-height:1.2em"></div>
+ <div class="row" style="margin-top:8px"><button id="cn">Continuar</button><button class="ghost" id="hm">Volver al inicio</button></div></div>`;
+ $("#hm").onclick=home;
+ $("#cn").onclick=()=>{
+   const v=($("#cg").value||"").trim();
+   const ok=/^[A-Za-z0-9_-]{3,40}$/.test(v);
+   if(!ok){$("#cgm").textContent="Usa solo letras, números, guion o guion bajo (3 a 40 caracteres, sin espacios).";return}
+   PT.codigo=v;
+   // Paso 2: consentimiento
+   app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
+   <h1>${titulo} de pensamiento estadístico</h1>
+   <div class="card"><h2 style="margin-top:0">Consentimiento informado</h2>
+   <p>${esc(CONSENT)}</p><p class="mut">Contacto de la investigadora: ${esc(CONTACTO)}</p>
+   <label class="opt"><input type="checkbox" id="ck"> He leído la información y acepto participar en el ${titulo.toLowerCase()}.</label>
+   <div class="row" style="margin-top:12px"><button id="si">Aceptar y comenzar</button><button class="ghost" id="no">No deseo participar</button></div></div>`;
+   $("#no").onclick=()=>{app.innerHTML=`<h1>Gracias</h1><p>Respetamos tu decisión. No se recogerá ningún dato.</p><button id="hm2">Volver al inicio</button>`;$("#hm2").onclick=home};
+   $("#si").onclick=()=>{if(!$("#ck").checked){alert("Marca la casilla para continuar.");return}PT.t0=Date.now();cuestionario40(tipo)};
+ };
 }
+
 function cuestionario40(tipo){
  const titulo=tipo==="pretest"?"Pretest":"Postest";
  app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
  <h1>${titulo} de pensamiento estadístico</h1>
+ <p class="mut">Código de participante: <b>${esc(PT.codigo)}</b></p>
  <div class="msg"><b>Instrucciones.</b> 40 preguntas de opción múltiple, 5 por semana. Responde de manera individual y sin consultar materiales. Marca una sola opción por pregunta. No se asigna calificación.</div>
  <form id="fm">${SEMANAS40.map((t,w)=>{
    const a=w*5,b=a+5;
@@ -296,13 +301,18 @@ function cuestionario40(tipo){
    e.preventDefault();
    const falta=[];TEST40.forEach((_,i)=>{const r=document.querySelector(`input[name=p${i+1}]:checked`);if(r)PT.resp[i]=r.value;else falta.push(i+1)});
    if(falta.length){alert("Faltan responder: "+falta.join(", "));return}
-   const fila={tipo:PT.tipo,grupo:GRUPO,consentimiento:true,seg_total:Math.round((Date.now()-PT.t0)/1000)};
+   const fila={id:PT.codigo,tipo:PT.tipo,grupo:GRUPO,consentimiento:true,seg_total:Math.round((Date.now()-PT.t0)/1000)};
    PT.resp.forEach((v,i)=>fila["p"+(i+1)]=v);
    const btn=$("#en");btn.disabled=true;btn.textContent="Guardando…";
    const {error}=await sb.from("pruebas").insert(fila);
-   if(error){btn.disabled=false;btn.textContent="Reintentar";alert("No se pudo guardar: "+error.message);return}
-   app.innerHTML=`<h1>¡Listo!</h1><p>Tu ${PT.tipo} quedó registrado. Gracias por participar.</p>
-   ${PT.tipo==="pretest"?`<p class="mut">El postest se habilitará al finalizar el módulo, en esta misma página.</p>`:""}
+   if(error){
+     btn.disabled=false;btn.textContent="Reintentar";
+     if(error.code==="23505"){alert("Ese código ya fue usado para el "+tipo+". Si te equivocaste, avisa a la investigadora.");}
+     else{alert("No se pudo guardar: "+error.message);}
+     return;
+   }
+   app.innerHTML=`<h1>¡Listo!</h1><p>Tu ${PT.tipo} quedó registrado con el código <b>${esc(PT.codigo)}</b>. Gracias por participar.</p>
+   ${PT.tipo==="pretest"?`<p class="mut">El postest se habilitará al finalizar el módulo. Usa el mismo código cuando llegue el momento.</p>`:""}
    <button id="hm">Volver al inicio</button>`;
    $("#hm").onclick=home;
  };
