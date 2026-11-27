@@ -160,7 +160,7 @@ const SK="sb_publishable__XetEygAawGocYqSj4snOw_MXvTE_ue";
 const GRUPO="musica";            // ⬅️ en la página de control: "control"
 const CONTACTO="fpsoto@utpl.edu.ec · 0991219066";
 const APERTURA_S1=new Date("2026-11-30T19:00:00-05:00");
-const POSTEST_ABIERTO=false;
+const POSTEST_ABIERTO=true;      // ⬅️ CAMBIADO A TRUE PARA APLICAR EL POSTEST
 const sb=supabase.createClient(SU,SK);
 
 const SEMANAS40=[
@@ -258,7 +258,6 @@ let PT=null;
 function prueba(tipo){
  PT={tipo,t0:null,resp:new Array(40).fill(null),codigo:null};
  const titulo=tipo==="pretest"?"Pretest":"Postest";
- // Paso 1: pedir código de participante
  app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
  <h1>${titulo} de pensamiento estadístico</h1>
  <div class="card"><h2 style="margin-top:0">Identificación del participante</h2>
@@ -272,7 +271,6 @@ function prueba(tipo){
    const ok=/^[A-Za-z0-9_-]{3,40}$/.test(v);
    if(!ok){$("#cgm").textContent="Usa solo letras, números, guion o guion bajo (3 a 40 caracteres, sin espacios).";return}
    PT.codigo=v;
-   // Paso 2: consentimiento
    app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
    <h1>${titulo} de pensamiento estadístico</h1>
    <div class="card"><h2 style="margin-top:0">Consentimiento informado</h2>
@@ -280,8 +278,36 @@ function prueba(tipo){
    <label class="opt"><input type="checkbox" id="ck"> He leído la información y acepto participar en el ${titulo.toLowerCase()}.</label>
    <div class="row" style="margin-top:12px"><button id="si">Aceptar y comenzar</button><button class="ghost" id="no">No deseo participar</button></div></div>`;
    $("#no").onclick=()=>{app.innerHTML=`<h1>Gracias</h1><p>Respetamos tu decisión. No se recogerá ningún dato.</p><button id="hm2">Volver al inicio</button>`;$("#hm2").onclick=home};
-   $("#si").onclick=()=>{if(!$("#ck").checked){alert("Marca la casilla para continuar.");return}PT.t0=Date.now();cuestionario40(tipo)};
+   $("#si").onclick=()=>{
+     if(!$("#ck").checked){alert("Marca la casilla para continuar.");return}
+     PT.t0=Date.now();
+     datosInformativos(tipo);
+   };
  };
+}
+
+function datosInformativos(tipo){
+ const titulo=tipo==="pretest"?"Pretest":"Postest";
+ const grupoTxt=GRUPO==="musica"?"Experimental (con música)":"Control (sin música)";
+ const fechaTxt=new Date().toLocaleDateString("es-EC",{day:"numeric",month:"long",year:"numeric"});
+ app.innerHTML=`<p class="mut sans" style="margin:0">Maestría en Educación · UTPL 2026</p>
+ <h1>${titulo} de pensamiento estadístico</h1>
+ <h2>Datos informativos</h2>
+ <div class="card">
+   <table style="width:100%;border-collapse:collapse">
+     <tr><td style="padding:6px 0;color:var(--mut)">Institución</td><td style="padding:6px 0">Universidad Técnica Particular de Loja (UTPL)</td></tr>
+     <tr><td style="padding:6px 0;color:var(--mut)">Programa</td><td style="padding:6px 0">Maestría en Educación, mención Enseñanza de la Matemática</td></tr>
+     <tr><td style="padding:6px 0;color:var(--mut)">Asignatura</td><td style="padding:6px 0">Pensamiento Estadístico</td></tr>
+     <tr><td style="padding:6px 0;color:var(--mut)">Grupo</td><td style="padding:6px 0"><b>${grupoTxt}</b></td></tr>
+     <tr><td style="padding:6px 0;color:var(--mut)">Código de participante</td><td style="padding:6px 0"><b>${esc(PT.codigo)}</b></td></tr>
+     <tr><td style="padding:6px 0;color:var(--mut)">Fecha de aplicación</td><td style="padding:6px 0">${fechaTxt}</td></tr>
+     <tr><td style="padding:6px 0;color:var(--mut)">Modalidad</td><td style="padding:6px 0">Virtual</td></tr>
+   </table>
+ </div>
+ <div class="msg"><b>Indicaciones.</b> Apreciado estudiante, responda con absoluta sinceridad y de forma individual. El instrumento contiene 40 preguntas de opción múltiple, organizadas en ocho temas (5 por tema). No tiene calificación. Marque una sola alternativa por pregunta y no consulte materiales de apoyo. Dispone de aproximadamente 20 a 25 minutos.</div>
+ <div class="row" style="margin-top:14px"><button id="go">Comenzar la prueba</button><button class="ghost" id="hm">Volver al inicio</button></div>`;
+ $("#hm").onclick=home;
+ $("#go").onclick=()=>cuestionario40(tipo);
 }
 
 function cuestionario40(tipo){
@@ -307,7 +333,7 @@ function cuestionario40(tipo){
    const {error}=await sb.from("pruebas").insert(fila);
    if(error){
      btn.disabled=false;btn.textContent="Reintentar";
-     if(error.code==="23505"){alert("Ese código ya fue usado para el "+tipo+". Si te equivocaste, avisa a la investigadora.");}
+     if(error.code==="23505"){alert("Ese código ya fue usado para el "+tipo+". Si ya lo habías respondido, no es necesario repetirlo.");}
      else{alert("No se pudo guardar: "+error.message);}
      return;
    }
